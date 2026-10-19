@@ -1,4 +1,5 @@
 import os
+import asyncio
 import base64
 import html
 import logging
@@ -183,6 +184,8 @@ async def post_init(app: Application):
 
 def main():
     threading.Thread(target=run_web, daemon=True).start()
+
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
     app = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
     app.add_handler(CommandHandler("start", start))
