@@ -196,3 +196,24 @@ func ForwardMessages(ctx *ext.Context, fromChatId, toChatId int64, messageID int
 	}
 	return update.(*tg.Updates), nil
 }
+
+// GetChannelInput resolves a channel (by its stripped ID) into an InputChannel,
+// caching it in the peer storage. Used for the forward target channel.
+func GetChannelInput(ctx context.Context, api *tg.Client, peerStorage *storage.PeerStorage, channelID int64) (*tg.InputChannel, error) {
+	if peer, ok := peerStorage.GetInputPeerById(channelID).(*tg.InputPeerChannel); ok {
+		return &tg.InputChannel{ChannelID: peer.ChannelID, AccessHash: peer.AccessHash}, nil
+	}
+	channels, err := api.ChannelsGetChannels(ctx, []tg.InputChannelClass{&tg.InputChannel{ChannelID: channelID}})
+	if err != nil {
+		return nil, err
+	}
+	if len(channels.GetChats()) == 0 {
+		return nil, errors.New("channel not found (is the bot an admin there?)")
+	}
+	channel, ok := channels.GetChats()[0].(*tg.Channel)
+	if !ok {
+		return nil, errors.New("type assertion to *tg.Channel failed")
+	}
+	peerStorage.AddPeer(channel.GetID(), channel.AccessHash, storage.TypeChannel, "")
+	return channel.AsInput(), nil
+}
