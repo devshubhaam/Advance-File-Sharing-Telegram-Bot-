@@ -171,11 +171,14 @@ func (c *config) setupEnvVars(log *zap.Logger, cmd *cobra.Command) {
 	if err != nil {
 		log.Fatal("Error while parsing env variables", zap.Error(err))
 	}
-	// Auto-detect the public URL on Koyeb (it injects KOYEB_PUBLIC_DOMAIN)
+	// Auto-detect the public URL on Koyeb (KOYEB_PUBLIC_DOMAIN) or Render (RENDER_EXTERNAL_URL)
 	if c.Host == "" {
 		if domain := os.Getenv("KOYEB_PUBLIC_DOMAIN"); domain != "" {
 			c.Host = "https://" + domain
 			log.Sugar().Info("HOST not set, using Koyeb public domain: " + c.Host)
+		} else if renderURL := os.Getenv("RENDER_EXTERNAL_URL"); renderURL != "" {
+			c.Host = renderURL
+			log.Sugar().Info("HOST not set, using Render URL: " + c.Host)
 		}
 	}
 	c.Host = strings.TrimRight(c.Host, "/")
