@@ -52,7 +52,11 @@ type config struct {
 	// DisableDownload hides the Download button and forces inline (stream-only) responses
 	DisableDownload bool         `envconfig:"DISABLE_DOWNLOAD" default:"false"`
 	AllowedUsers    allowedUsers `envconfig:"ALLOWED_USERS"`
-	MultiTokens     []string
+	// Forward feature: copy video/image posts from LOG_CHANNEL (database) to users or a channel
+	ForwardChannelID int64        `envconfig:"FORWARD_CHANNEL"`
+	AdminUsers       allowedUsers `envconfig:"ADMIN_USERS"`
+	ProtectContent   bool         `envconfig:"PROTECT_CONTENT" default:"true"`
+	MultiTokens      []string
 
 	// stream specific config
 	StreamConcurrency int `envconfig:"STREAM_CONCURRENCY" default:"4"`
