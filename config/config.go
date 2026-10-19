@@ -38,19 +38,21 @@ func (au *allowedUsers) Decode(value string) error {
 }
 
 type config struct {
-	ApiID          int32        `envconfig:"API_ID" required:"true"`
-	ApiHash        string       `envconfig:"API_HASH" required:"true"`
-	BotToken       string       `envconfig:"BOT_TOKEN" required:"true"`
-	LogChannelID   int64        `envconfig:"LOG_CHANNEL" required:"true"`
-	Dev            bool         `envconfig:"DEV" default:"false"`
-	Port           int          `envconfig:"PORT" default:"8080"`
-	Host           string       `envconfig:"HOST" default:""`
-	HashLength     int          `envconfig:"HASH_LENGTH" default:"6"`
-	UseSessionFile bool         `envconfig:"USE_SESSION_FILE" default:"true"`
-	UserSession    string       `envconfig:"USER_SESSION"`
-	UsePublicIP    bool         `envconfig:"USE_PUBLIC_IP" default:"false"`
-	AllowedUsers   allowedUsers `envconfig:"ALLOWED_USERS"`
-	MultiTokens    []string
+	ApiID          int32  `envconfig:"API_ID" required:"true"`
+	ApiHash        string `envconfig:"API_HASH" required:"true"`
+	BotToken       string `envconfig:"BOT_TOKEN" required:"true"`
+	LogChannelID   int64  `envconfig:"LOG_CHANNEL" required:"true"`
+	Dev            bool   `envconfig:"DEV" default:"false"`
+	Port           int    `envconfig:"PORT" default:"8080"`
+	Host           string `envconfig:"HOST" default:""`
+	HashLength     int    `envconfig:"HASH_LENGTH" default:"6"`
+	UseSessionFile bool   `envconfig:"USE_SESSION_FILE" default:"true"`
+	UserSession    string `envconfig:"USER_SESSION"`
+	UsePublicIP    bool   `envconfig:"USE_PUBLIC_IP" default:"false"`
+	// DisableDownload hides the Download button and forces inline (stream-only) responses
+	DisableDownload bool         `envconfig:"DISABLE_DOWNLOAD" default:"false"`
+	AllowedUsers    allowedUsers `envconfig:"ALLOWED_USERS"`
+	MultiTokens     []string
 
 	// stream specific config
 	StreamConcurrency int `envconfig:"STREAM_CONCURRENCY" default:"4"`
@@ -220,6 +222,9 @@ func Load(log *zap.Logger, cmd *cobra.Command) {
 	defer log.Info("Loaded config")
 	ValueOf.setupEnvVars(log, cmd)
 	ValueOf.LogChannelID = int64(stripInt(log, int(ValueOf.LogChannelID)))
+	if ValueOf.ForwardChannelID != 0 {
+		ValueOf.ForwardChannelID = int64(stripInt(log, int(ValueOf.ForwardChannelID)))
+	}
 	if ValueOf.HashLength == 0 {
 		log.Sugar().Info("HASH_LENGTH can't be 0, defaulting to 6")
 		ValueOf.HashLength = 6
